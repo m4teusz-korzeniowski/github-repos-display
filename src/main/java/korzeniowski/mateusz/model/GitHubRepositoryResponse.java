@@ -17,7 +17,7 @@ public class GitHubRepositoryResponse {
     @AllArgsConstructor
     @NoArgsConstructor
     @Data
-    static class Branch {
+    public static class Branch {
         private String name;
         private String lastCommitSha;
     }

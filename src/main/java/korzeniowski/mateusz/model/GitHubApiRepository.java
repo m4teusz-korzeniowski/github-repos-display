@@ -7,15 +7,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GitHubApiBranchResponse {
+public class GitHubApiRepository {
     private String name;
-    private Commit commit;
+    private Boolean fork;
+    private Owner owner;
 
     @AllArgsConstructor
     @NoArgsConstructor
     @Data
-    static class Commit {
-        private String lastCommitSha;
+    static class Owner {
+        private String login;
     }
-
 }
