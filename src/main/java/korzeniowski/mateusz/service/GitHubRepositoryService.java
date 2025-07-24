@@ -1,9 +1,11 @@
 package korzeniowski.mateusz.service;
 
+import korzeniowski.mateusz.excpetion.UserNotFoundException;
 import korzeniowski.mateusz.model.GitHubApiBranch;
 import korzeniowski.mateusz.model.GitHubApiRepository;
 import korzeniowski.mateusz.model.GitHubRepositoryResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -24,22 +26,34 @@ public class GitHubRepositoryService {
     public List<GitHubRepositoryResponse> getRepositories(String username) {
         String userReposUrl = String.format(USER_REPOS_URL, username);
 
-        GitHubApiRepository[] repos = restTemplate.getForObject(userReposUrl, GitHubApiRepository[].class);
-        List<GitHubApiRepository> reposList = Arrays.stream(repos)
-                .filter(repo -> !Boolean.TRUE.equals(repo.getFork()))
-                .toList();
+        try {
+            GitHubApiRepository[] repos = restTemplate.getForObject(userReposUrl, GitHubApiRepository[].class);
 
-        List<GitHubRepositoryResponse> response = new ArrayList<>();
+            if (repos == null) {
+                return new ArrayList<>();
+            }
 
-        for (GitHubApiRepository repo : reposList) {
-            String repoBranchesUrl = String.format(REPO_BRANCHES_URL, username, repo.getName());
-            GitHubApiBranch[] branches = restTemplate.getForObject(repoBranchesUrl, GitHubApiBranch[].class);
-            List<GitHubRepositoryResponse.Branch> branchesList = Arrays.stream(branches)
-                    .map(this::map)
+            List<GitHubApiRepository> reposList = Arrays.stream(repos)
+                    .filter(repo -> !Boolean.TRUE.equals(repo.getFork()))
                     .toList();
-            response.add(new GitHubRepositoryResponse(repo.getName(), username, branchesList));
+
+            List<GitHubRepositoryResponse> response = new ArrayList<>();
+
+            for (GitHubApiRepository repo : reposList) {
+                String repoBranchesUrl = String.format(REPO_BRANCHES_URL, username, repo.getName());
+                GitHubApiBranch[] branches = restTemplate.getForObject(repoBranchesUrl, GitHubApiBranch[].class);
+                if (branches == null) {
+                    branches = new GitHubApiBranch[0];
+                }
+                List<GitHubRepositoryResponse.Branch> branchesList = Arrays.stream(branches)
+                        .map(this::map)
+                        .toList();
+                response.add(new GitHubRepositoryResponse(repo.getName(), username, branchesList));
+            }
+            return response;
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new UserNotFoundException(String.format("GitHub user %s not exists", username));
         }
-        return response;
     }
 
     private GitHubRepositoryResponse.Branch map(GitHubApiBranch branch) {
