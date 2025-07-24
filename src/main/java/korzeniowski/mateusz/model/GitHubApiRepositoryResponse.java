@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GitHubApiResponse {
+public class GitHubApiRepositoryResponse {
     private String name;
     private Boolean fork;
     private Owner owner;
