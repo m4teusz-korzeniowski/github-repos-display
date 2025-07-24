@@ -1,13 +1,11 @@
 package korzeniowski.mateusz.controller;
 
 import korzeniowski.mateusz.excpetion.UserNotFoundException;
-import korzeniowski.mateusz.model.GitHubApiRepository;
 import korzeniowski.mateusz.model.GitHubRepositoryResponse;
 import korzeniowski.mateusz.service.GitHubRepositoryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
