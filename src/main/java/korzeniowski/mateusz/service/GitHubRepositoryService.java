@@ -1,9 +1,12 @@
 package korzeniowski.mateusz.service;
 
-import korzeniowski.mateusz.model.GitHubApiRepositoryResponse;
+import korzeniowski.mateusz.model.GitHubApiBranch;
+import korzeniowski.mateusz.model.GitHubApiRepository;
+import korzeniowski.mateusz.model.GitHubRepositoryResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,13 +21,28 @@ public class GitHubRepositoryService {
         this.restTemplate = new RestTemplate();
     }
 
-    public List<GitHubApiRepositoryResponse> getRepositories(String username) {
+    public List<GitHubRepositoryResponse> getRepositories(String username) {
         String userReposUrl = String.format(USER_REPOS_URL, username);
-        //String repoBranchesUrl = String.format(REPO_BRANCHES_URL, owner, repo);
-        GitHubApiRepositoryResponse[] repos = restTemplate.getForObject(userReposUrl, GitHubApiRepositoryResponse[].class);
-        List<GitHubApiRepositoryResponse> list = Arrays.stream(repos)
+
+        GitHubApiRepository[] repos = restTemplate.getForObject(userReposUrl, GitHubApiRepository[].class);
+        List<GitHubApiRepository> reposList = Arrays.stream(repos)
                 .filter(repo -> !Boolean.TRUE.equals(repo.getFork()))
                 .toList();
-        return list;
+
+        List<GitHubRepositoryResponse> response = new ArrayList<>();
+
+        for (GitHubApiRepository repo : reposList) {
+            String repoBranchesUrl = String.format(REPO_BRANCHES_URL, username, repo.getName());
+            GitHubApiBranch[] branches = restTemplate.getForObject(repoBranchesUrl, GitHubApiBranch[].class);
+            List<GitHubRepositoryResponse.Branch> branchesList = Arrays.stream(branches)
+                    .map(this::map)
+                    .toList();
+            response.add(new GitHubRepositoryResponse(repo.getName(), username, branchesList));
+        }
+        return response;
+    }
+
+    private GitHubRepositoryResponse.Branch map(GitHubApiBranch branch) {
+        return new GitHubRepositoryResponse.Branch(branch.getName(), branch.getCommit().getSha());
     }
 }

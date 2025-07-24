@@ -1,6 +1,6 @@
 package korzeniowski.mateusz.controller;
 
-import korzeniowski.mateusz.model.GitHubApiRepositoryResponse;
+import korzeniowski.mateusz.model.GitHubRepositoryResponse;
 import korzeniowski.mateusz.service.GitHubRepositoryService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +18,7 @@ public class GitHubRepositoryController {
     }
 
     @GetMapping("/{username}/repos")
-    public List<GitHubApiRepositoryResponse> getRepos(@PathVariable String username) {
+    public List<GitHubRepositoryResponse> getRepos(@PathVariable String username) {
         return repositoryService.getRepositories(username);
     }
 }
